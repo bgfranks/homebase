@@ -1,5 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../firebase.config'
+
+// icons
 import { ReactComponent as ArrowRightIcon } from '../assets/svg/keyboardArrowRightIcon.svg'
 import visibilityIcon from '../assets/svg/visibilityIcon.svg'
 
@@ -20,6 +29,38 @@ export default function SignUp() {
     }))
   }
 
+  const onSubmit = async (e) => {
+    e.preventDefault()
+
+    try {
+      // gets the auth from firebase
+      const auth = getAuth()
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+      const user = userCred.user
+
+      // updates the display name
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      })
+
+      // sets the user to the DB
+      const formDataCopy = { ...formData }
+      delete formDataCopy.password
+      formDataCopy.timestamp = serverTimestamp()
+
+      await setDoc(doc(db, 'users', user.uid), formDataCopy)
+
+      // redirects back to home
+      navigate('/')
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   return (
     <>
       <div className='pageContainer'>
@@ -27,7 +68,7 @@ export default function SignUp() {
           <p className='pageHeader'>Create an Account!</p>
         </header>
         <main>
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               type='text'
               className='nameInput'
@@ -69,7 +110,7 @@ export default function SignUp() {
           </form>
           {/* Google auth */}
           <Link to='/sign-in' className='registerLink'>
-            Already have an account? Sign In
+            Already have an account? Sign In!
           </Link>
         </main>
       </div>

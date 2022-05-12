@@ -63,7 +63,7 @@ export default function SignIn() {
           </form>
           {/* Google auth */}
           <Link to='/sign-up' className='registerLink'>
-            Sign Up Instead
+            Need an account? Sign up!
           </Link>
         </main>
       </div>
